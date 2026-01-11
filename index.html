@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employees Rotation Tracker</title>
+
+    <link rel="icon" href="kbr-removebg-preview.png" type="image/png">
+    <link rel="apple-touch-icon" href="kbr-removebg-preview.png">
+
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --bg-image: url('CSU TEAM.jpg');
+            --glass-bg: rgba(30, 40, 50, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text: #ffffff;
+            --success: #00c851;
+            --danger: #ff4444;
+            --warning: #ffbb33;
+            --nav-bg: #1a2226;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f2027;
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+            user-select: none;
+        }
+
+        body::before {
+            content: "";
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: var(--bg-image);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.5);
+            filter: blur(2px);
+            transition: background 0.5s ease;
+        }
+
+        .header-container { text-align: center; margin-top: 30px; margin-bottom: 20px; }
+        .logo-container img {
+            max-width: 250px; height: auto; display: block;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); margin: 0 auto;
+        }
+
+        .app-title .en { font-size: 1.2em; font-weight: bold; display: block; color: var(--primary); }
+        .app-title .ar { font-size: 0.9em; display: block; opacity: 0.8; }
+
+        .container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 25px; padding-top: 70px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            text-align: center;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        /* --- Buttons & Inputs --- */
+        .top-btn {
+            position: absolute; top: 15px; width: 35px; height: 35px;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s; font-size: 1.1em; z-index: 10;
+            border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08);
+        }
+        .top-btn:hover { transform: translateY(-2px); }
+
+        .btn-theme { left: 15px; } .btn-theme:hover { background: var(--primary); color: #000; }
+
+        .btn-currency { left: 60px; color: #88ff88; border-color: rgba(136, 255, 136, 0.3); }
+        .btn-currency:hover { background: #00c851; color: #fff; }
+
+        .btn-logout { left: 105px; border-color: rgba(255,68,68,0.3); color: #ff6666; }
+        .btn-logout:hover { background: var(--danger); color: #fff; }
+
+        .btn-info { right: 15px; font-family: serif; font-weight: bold; } .btn-info:hover { background: var(--primary); color: #000; }
+        .btn-notes { right: 60px; border-color: rgba(255,187,51,0.3); color: #ffcc00; } .btn-notes:hover { background: var(--warning); color: #000; }
+
+        .back-arrow-container {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            cursor: pointer; z-index: 20; background: rgba(255,255,255,0.15);
+            padding: 5px 20px; border-radius: 10px; border: 1px solid var(--glass-border);
+            font-size: 1.2em; color: #fff; transition: 0.3s;
+        }
+        .back-arrow-container:hover { background: rgba(255,255,255,0.3); transform: translateX(-50%) scale(1.05); }
+
+        .input-group { margin-bottom: 12px; text-align: right; }
+        label { display: block; margin-bottom: 5px; font-size: 0.85em; color: #ccc; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.4); color: #fff;
+            font-size: 1em; box-sizing: border-box; text-align: center;
+        }
+        textarea { text-align: right; min-height: 100px; resize: none; }
+        select option { background: #1a2f38; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: rgba(0,0,0,0.6); }
+        .row { display: flex; gap: 10px; }
+
+        .btn {
+            width: 100%; padding: 12px;
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+            border: none; border-radius: 10px; color: white;
+            font-size: 1.1em; cursor: pointer; transition: 0.3s;
+            margin-top: 5px; font-weight: bold;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 210, 255, 0.3); }
+
+        .btn-salary-only {
+            background: rgba(0, 200, 81, 0.2); border: 1px solid var(--success); color: #88ff88;
+            margin-top: 10px; font-size: 0.9em;
+        }
+        .btn-salary-only:hover { background: var(--success); color: #fff; }
+
+        .btn-year-plan {
+            width: 100%; padding: 10px; margin-top: 10px;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid var(--primary);
+            color: var(--primary); border-radius: 10px; cursor: pointer;
+            font-weight: bold; font-size: 0.95em; transition: 0.3s;
+        }
+        .btn-year-plan:hover { background: var(--primary); color: #000; }
+
+        .download-buttons-container { display: flex; gap: 10px; margin-top: 15px; }
+        .download-btn {
+            flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.2); color: #fff;
+            text-decoration: none; padding: 10px; border-radius: 10px;
+            font-weight: bold; transition: 0.3s; font-size: 0.8em; cursor: pointer;
+        }
+        .btn-android { background: rgba(0, 0, 0, 0.6); border-color: #3DDC84; } .btn-android:hover { background: #3DDC84; color: #000; }
+        .btn-ios { background: rgba(0, 0, 0, 0.6); border-color: #fff; } .btn-ios:hover { background: #fff; color: #000; }
+
+        .progress-container { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 15px 0 5px 0; overflow: hidden; position: relative; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--secondary), var(--primary)); transition: width 1s ease-in-out; border-radius: 10px; }
+        .progress-text { font-size: 0.75em; color: #aaa; margin-bottom: 15px; }
+
+        .bottom-nav {
+            display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: var(--nav-bg); border-top: 1px solid var(--glass-border);
+            justify-content: center; align-items: center; gap: 60px; z-index: 1000;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5); padding: 0;
+        }
+        .nav-item { color: #777; text-align: center; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
+        .nav-item.active { color: var(--primary); transform: scale(1.1); }
+        .nav-icon { font-size: 1.4em; display: block; margin-bottom: 2px; }
+        .nav-text { font-size: 0.75em; }
+
+        .view-section { display: none; animation: fadeIn 0.4s; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .status-badge { display: inline-block; padding: 8px 30px; border-radius: 25px; font-weight: bold; font-size: 1.2em; margin: 5px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .status-work { background-color: var(--danger); color: white; }
+        .status-off { background-color: var(--success); color: white; }
+
+        .timer { font-size: 2.8em; font-weight: bold; margin: 5px 0; font-family: 'Courier New', Courier, monospace; color: var(--primary); text-shadow: 0 0 15px rgba(0, 210, 255, 0.4); direction: ltr; }
+
+        .roadmap-container { display: flex; gap: 10px; margin: 20px 0; }
+        .roadmap-box { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px; text-align: center; }
+        .roadmap-label { font-size: 0.75em; color: #aaa; margin-bottom: 5px; }
+        .roadmap-date { font-size: 1.1em; font-weight: bold; color: #fff; direction: ltr; line-height: 1.2; }
+        .day-small { font-size: 0.75em; color: var(--primary); display: block; font-weight: normal; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+        .roadmap-icon { font-size: 1.4em; display: block; margin-bottom: 5px; }
+
+        .calendar-container { margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px; direction: ltr; }
+        .cal-day { padding: 6px 2px; font-size: 0.7em; text-align: center; border-radius: 4px; background: rgba(255,255,255,0.05); }
+        .cal-work { background: rgba(255, 68, 68, 0.6); color: #fff; }
+        .cal-rest { background: rgba(0, 200, 81, 0.6); color: #fff; }
+        .cal-today { border: 2px solid #fff; transform: scale(1.1); z-index: 2; box-shadow: 0 0 5px #fff; }
+
+        .salary-card { background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px; margin-bottom: 10px; text-align: right; position: relative; overflow: hidden; transition: 0.3s; }
+        .salary-label { font-size: 0.85em; color: #ccc; display: block; }
+        .salary-value { font-size: 1.5em; font-weight: bold; color: #fff; display: block; margin-top: 5px; direction: ltr; transition: 0.3s; }
+        .blur-text { filter: blur(8px); opacity: 0.5; user-select: none; }
+        .privacy-toggle { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.2em; cursor: pointer; color: #aaa; z-index: 20; }
+        .salary-inputs { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--glass-border); }
+        .salary-toggle-btn { background: rgba(0, 210, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); width: 100%; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.9em; margin-bottom: 10px; transition:0.3s; }
+        .salary-toggle-btn:hover { background: rgba(0, 210, 255, 0.2); }
+        .section-title { font-size: 0.9em; color: #aaa; margin-bottom: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+
+        .currency-toggle-btn {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(255,255,255,0.1); border: 1px solid var(--warning);
+            color: var(--warning); border-radius: 8px; padding: 5px 10px;
+            font-size: 0.9em; cursor: pointer; transition: 0.3s; z-index: 25;
+        }
+        .currency-toggle-btn:hover { background: var(--warning); color: #000; }
+
+        .share-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; width: 100%; padding: 10px; border-radius: 8px; margin-top: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; font-size: 0.9em; }
+        .share-btn:hover { background: rgba(255,255,255,0.2); }
+
+        /* Modals */
+        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+        .modal-content { background: #1a2f38; margin: 15% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 450px; text-align: center; border: 1px solid var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+        .close-modal { position: absolute; right: 15px; top: 10px; font-size: 28px; cursor: pointer; color: #aaa; }
+
+        .alert-content { margin: 0; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; border-color: var(--warning); box-shadow: 0 5px 25px rgba(255, 187, 51, 0.4); background: rgba(40, 30, 20, 0.98); animation: slideUp 0.4s ease-out forwards; z-index: 3101; text-align: left; direction: ltr; }
+        @keyframes slideUp { from { bottom: -150px; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        .alert-title { color: var(--warning); margin-top: 0; font-size: 1.4em; }
+        #customAlertText { font-size: 1.1em; line-height: 1.5; color: #eee; margin: 15px 0; }
+
+        .btn-edit { background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #ddd; width: 100%; padding: 10px; border-radius: 8px; margin-top: 20px; cursor: pointer; }
+        .footer { margin-top: 20px; font-size: 0.75em; color: #888; text-align: center; font-family: sans-serif; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; width: 100%; }
+
+        #notesList { max-height: 200px; overflow-y: auto; margin-top: 15px; text-align: right; }
+        .note-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: flex-start; }
+        .note-text { color: #fff; font-size: 0.9em; width: 85%; word-break: break-word; }
+        .note-date { display: block; font-size: 0.7em; color: var(--secondary); margin-top: 5px; direction: ltr; }
+        .delete-note { color: #ff4444; cursor: pointer; font-size: 1.2em; padding: 0 5px; }
+        #newNoteInput { width: 100%; height: 60px; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid #555; color: #fff; text-align: right; resize: none; }
+
+        .ios-steps { text-align: right; margin-top: 15px; color: #ddd; font-size: 0.9em; line-height: 1.6; }
+
+        #yearScheduleList { max-height: 350px; overflow-y: auto; margin-top: 15px; text-align: left; direction: ltr; padding-right: 5px; }
+        .year-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin-bottom: 8px; border-radius: 8px; background: rgba(255,255,255,0.05); border-left: 4px solid var(--secondary); }
+        .year-item.work { border-left-color: var(--danger); background: rgba(255, 68, 68, 0.1); }
+        .year-item.rest { border-left-color: var(--success); background: rgba(0, 200, 81, 0.1); }
+        .y-date { font-weight: bold; color: #fff; font-size: 1.1em; }
+        .y-dayname { color: var(--primary); font-size: 0.9em; margin-left: 8px; font-weight: normal; }
+        .y-label { font-size: 0.8em; color: #ccc; margin-top: 3px; }
+
+        /* Currency Modal Styles */
+        .currency-result { font-size: 1.8em; color: var(--success); font-weight: bold; margin: 15px 0; text-shadow: 0 0 10px rgba(0, 200, 81, 0.3); }
+        .currency-label { font-size: 0.9em; color: #aaa; margin-top: 10px; }
+
+        /* زر التبديل */
+        .currency-swap-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        .currency-swap-btn:hover { background: var(--primary); color: #000; }
+    </style>
+</head>
+<body>
+
+<div class="header-container">
+    <div class="logo-container">
+        <img src="kbr-removebg-preview.png" alt="KBR Logo">
+    </div>
+    <h1 class="app-title">
+        <span class="en">Rotation & Salary Tracker</span>
+        <span class="ar">نظام تتبع المناوبات والراتب</span>
+    </h1>
+</div>
+
+<div class="container" id="mainContainer">
+
+    <div class="top-btn btn-theme" onclick="toggleTheme()" title="Background">🖼️</div>
+    <div class="top-btn btn-currency" onclick="openModal('currencyModal')" title="Currency Converter">💱</div>
+
+    <div class="top-btn btn-logout" onclick="confirmLogout()" title="Logout">🚪</div>
+    <div class="top-btn btn-notes" onclick="openModal('notesModal')" title="Notes">📝</div>
+    <div class="top-btn btn-info" onclick="openModal('infoModal')" title="About">i</div>
+
+    <div id="inputSection">
+        <div class="input-group">
+            <label>Name (الاسم)</label>
+            <input type="text" id="username" placeholder="Enter Name">
+        </div>
+        <div class="row">
+            <div class="input-group" style="flex:1">
+                <label>Work Days (العمل)</label>
+                <input type="number" id="workDays" placeholder="28">
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>Rest Days (الاستراحة)</label>
+                <input type="number" id="restDays" placeholder="28">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Date Type (نوع التاريخ)</label>
+            <select id="startType">
+                <option value="work">Start of Work (بداية الدوام)</option>
+                <option value="rest">Start of Rest (بداية الاستراحة)</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Date (التاريخ)</label>
+            <input type="date" id="startDate">
+        </div>
+
+        <button class="salary-toggle-btn" onclick="toggleSalaryInputs()">💰 Salary Calculator / حاسبة الراتب (اضغط هنا)</button>
+
+        <div class="salary-inputs" id="salaryInputsBlock">
+            <div class="section-title">Salary & Deductions (الراتب والاستقطاعات)</div>
+            <div class="input-group">
+                <label>Annual Gross Salary (الراتب السنوي الكلي)</label>
+                <input type="number" id="annualSalary" placeholder="Example: 120000">
+            </div>
+            <div class="input-group">
+                <label>Exchange Rate / سعر الصرف (1$ = ?)</label>
+                <input type="number" id="exchangeRate" placeholder="e.g. 1500 (For results page)">
+            </div>
+            <div class="row">
+                <div class="input-group" style="flex:1">
+                    <label>Tax % (الضريبة)</label>
+                    <input type="number" id="taxRate" placeholder="e.g. 5">
+                </div>
+                <div class="input-group" style="flex:1">
+                    <label>Social Security % (ضمان)</label>
+                    <input type="number" id="socialRate" placeholder="e.g. 5">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Months Worked (أشهر العمل المنجزة)</label>
+                <input type="number" id="monthsWorked" placeholder="How many months so far?">
+            </div>
+
+            <button class="btn btn-salary-only" onclick="calculateSalaryOnly()">🧮 Calculate Salary Only / حساب الراتب فقط</button>
+            <p style="font-size:0.7em; color:#888; text-align:center; margin:5px 0;">Use this to ignore rotation dates.</p>
+        </div>
+
+        <button class="btn" onclick="calculateAll()">Calculate All / حساب الكل</button>
+
+        <div class="download-buttons-container">
+            <a href="app.apk" download class="download-btn btn-android">
+                <span>🤖</span> Android App
+            </a>
+            <div onclick="openModal('iosModal')" class="download-btn btn-ios">
+                <span>🍏</span> iPhone (iOS)
+            </div>
+        </div>
+
+        <div class="footer">Designed & Developed by <span style="color:var(--primary);">Hassan Nazzal</span> © 2026</div>
+    </div>
+
+    <div id="resultSection" style="display:none;">
+        <div class="back-arrow-container" onclick="resetForm()">
+            ⬅️
+        </div>
+
+        <h2 id="displayHeader" style="margin-bottom: 5px;">Welcome</h2>
+
+        <div id="rotationView" class="view-section active">
+            <span id="statusBadge" class="status-badge">Calculating...</span>
+            <div class="timer" id="timer">00d 00:00:00</div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-text" id="progressText">0% Complete</div>
+
+            <div class="roadmap-container">
+                <div class="roadmap-box">
+                    <span class="roadmap-icon">➡️</span>
+                    <div class="roadmap-label" id="nextEventLabel">Next</div>
+                    <div class="roadmap-date" id="nextEventDate">
+                        --/-- <span class="day-small">---</span>
+                    </div>
+                </div>
+                <div class="roadmap-box">
+                    <span class="roadmap-icon">🔄</span>
+                    <div class="roadmap-label" id="followingEventLabel">Then</div>
+                    <div class="roadmap-date" id="followingEventDate">
+                        --/-- <span class="day-small">---</span>
+                    </div>
+                </div>
+            </div>
+
+            <div onclick="generateYearSchedule()" class="btn-year-plan">
+                📅 Full Year Schedule / جدول السنة الكامل
+            </div>
+
+            <button class="share-btn" onclick="shareStatus()">
+                <span>📤 Share Status / مشاركة الحالة</span>
+            </button>
+
+            <div class="calendar-container">
+                <div style="font-size:0.8em; color:#aaa; margin-bottom:5px; text-align:center;">Upcoming Days (الأيام القادمة)</div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+        </div>
+
+        <div id="salaryView" class="view-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; position:relative;">
+                <h3 style="color:var(--primary); margin:0; margin-left: 50px;">Financial Summary</h3>
+                <button class="currency-toggle-btn" onclick="toggleCurrency()" title="Switch Currency">💲/ د.ع</button>
+                <button class="privacy-toggle" onclick="togglePrivacy()" title="Hide/Show Salary">👁️</button>
+            </div>
+
+            <div class="salary-card" style="border-left: 5px solid var(--success); background: rgba(0,200,81,0.15);">
+                <span class="salary-label">Projected Remaining (الصافي المتبقي لك)</span>
+                <span class="salary-value privacy-sensitive" id="resRemaining" style="color:#88ff88">0</span>
+                <span class="salary-sub">After deductions & collected salary</span>
+            </div>
+
+            <div class="row">
+                <div class="salary-card" style="flex:1; border-left: 3px solid var(--secondary); padding:15px; margin-bottom:0;">
+                    <span class="salary-label">Received (استلمت فعلياً)</span>
+                    <span class="salary-value privacy-sensitive" id="resReceived" style="font-size:1.1em;">0</span>
+                    <span class="salary-sub" id="monthsWorkedText">for 0 months</span>
+                </div>
+                <div class="salary-card" style="flex:1; border-left: 3px solid var(--warning); padding:15px; margin-bottom:0;">
+                    <span class="salary-label">Net Monthly (الشهري الصافي)</span>
+                    <span class="salary-value privacy-sensitive" id="resNetMonthly" style="font-size:1.1em;">0</span>
+                </div>
+            </div>
+            <div style="margin-top:10px;"></div>
+
+            <div class="salary-card" style="border-left: 5px solid var(--danger);">
+                <span class="salary-label">Est. Deductions (إجمالي الاستقطاعات المتوقعة)</span>
+                <span class="salary-value privacy-sensitive" id="resDeducted" style="color:#ffaaaa; font-size:1.4em;">0</span>
+                <span class="salary-sub" id="deductionDetails">Tax & Social Security</span>
+            </div>
+        </div>
+
+        <button class="btn-edit" onclick="resetForm()">✏️ Edit Data / تعديل البيانات</button>
+        <div class="footer">Designed by <span style="color:var(--primary);">Hassan Nazzal</span></div>
+    </div>
+
+</div>
+
+<div class="bottom-nav" id="bottomNav">
+    <div class="nav-item active" onclick="switchTab('rotation')">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-text">Rotation / المناوبة</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('salary')">
+        <span class="nav-icon">💰</span>
+        <span class="nav-text">Salary / الراتب</span>
+    </div>
+</div>
+
+<div id="currencyModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('currencyModal')">&times;</span>
+        <h3 style="color:var(--success)">💱 Live Converter</h3>
+
+        <div onclick="toggleDirection()" class="currency-swap-btn" title="Switch Direction">
+            <span id="directionIcon">⬇️</span> <span id="directionText">USD to Local</span>
+        </div>
+
+        <div class="input-group">
+            <label id="amountLabel">Amount (USD) / المبلغ بالدولار</label>
+            <input type="number" id="convAmount" step="any" placeholder="100" oninput="convertCurrency()">
+        </div>
+
+        <div class="input-group">
+            <label>Target Country / الدولة</label>
+            <select id="convCountry" onchange="updateRatePlaceholder()">
+                <option value="IQD">🇮🇶 Iraq (IQD)</option>
+                <option value="TRY">🇹🇷 Turkey (Lira)</option>
+                <option value="INR">🇮🇳 India (Rupee)</option>
+                <option value="CNY">🇨🇳 China (Yuan)</option>
+                <option value="AED">🇦🇪 UAE (Dirham)</option>
+                <option value="SAR">🇸🇦 KSA (Riyal)</option>
+                <option value="EGP">🇪🇬 Egypt (Pound)</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Exchange Rate / سعر الصرف</label>
+            <input type="number" id="convRate" placeholder="e.g. 1500" oninput="convertCurrency()">
+        </div>
+
+        <div style="border-top:1px solid #555; margin-top:15px; padding-top:10px;">
+            <div class="currency-label">Result / النتيجة</div>
+            <div id="convResult" class="currency-result">0</div>
+        </div>
+    </div>
+</div>
+
+<div id="infoModal" class="modal">
+    <div class="modal-content" style="max-width: 450px; width: 90%; text-align: left; max-height: 80vh; overflow-y: auto; margin: 15% auto;">
+        <span class="close-modal" onclick="closeModal('infoModal')">&times;</span>
+        <h3 style="color:var(--primary); text-align: center; margin-top: 0;">About App / عن التطبيق</h3>
+        <div style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <h4 style="color:#fff; margin-bottom: 5px;">Employees Rotation Tracker</h4>
+            <p style="font-size: 0.85em; color: #ccc; line-height: 1.5;">The ultimate companion for rotation-based employees.</p>
+            <ul style="font-size: 0.85em; color: #ccc; padding-left: 20px; line-height: 1.4;">
+                <li><b>📅 Smart Tracking:</b> Calculates work/rest cycles & counts down to your vacation.</li>
+                <li><b>💰 Salary Calc:</b> Estimates Net Monthly Salary after tax & social security.</li>
+                <li><b>🔒 Offline & Private:</b> 100% offline. Data stays on your device.</li>
+            </ul>
+        </div>
+        <div style="text-align: right; direction: rtl;">
+            <h4 style="color:#fff; margin-bottom: 5px;">🇮🇶 نظام تتبع المناوبات</h4>
+            <p style="font-size: 0.85em; color: #ccc; line-height: 1.5;">الرفيق الأمثل لموظفي الروتيشن لإدارة الوقت والمال.</p>
+            <ul style="font-size: 0.85em; color: #ccc; padding-right: 20px; line-height: 1.4;">
+                <li><b>📅 تتبع ذكي:</b> حساب دقيق لأيام العمل والإجازة مع عداد تنازلي.</li>
+                <li><b>💰 حاسبة الراتب:</b> تقدير الصافي الشهري بعد استقطاع الضريبة والضمان.</li>
+                <li><b>🔒 خصوصية تامة:</b> يعمل بدون إنترنت، وبياناتك محفوظة بجهازك فقط.</li>
+            </ul>
+        </div>
+        <div style="text-align: center; margin-top: 15px; font-size: 0.8em; color: var(--primary);">Version 1.4</div>
+    </div>
+</div>
+
+<div id="notesModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('notesModal')">&times;</span>
+        <h3 style="color:var(--warning)">📝 Notes Log / سجل الملاحظات</h3>
+        <p style="font-size:0.8em; color:#aaa;">Add items to remember (saved with date)</p>
+        <textarea id="newNoteInput" placeholder="أكتب ملاحظة جديدة..."></textarea>
+        <button class="btn" onclick="addNote()" style="margin-top:10px; background:var(--warning); color:#000; width:100%;">Add Note / إضافة</button>
+        <div id="notesList"></div>
+    </div>
+</div>
+
+<div id="iosModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal('iosModal')">&times;</span>
+        <h3 style="color:#fff">Install on iPhone 🍏</h3>
+        <div class="ios-steps">
+            <p>1. Open this link in <b>Safari</b>.</p>
+            <p>2. Tap the <b>Share</b> icon <span style="font-size:1.3em">⎋</span> in the bottom bar.</p>
+            <p>3. Scroll down & select <br><b>'Add to Home Screen' (إضافة للشاشة الرئيسية)</b>.</p>
+        </div>
+        <button class="btn" onclick="closeModal('iosModal')" style="margin-top:15px; background:#fff; color:#000;">Got it!</button>
+    </div>
+</div>
+
+<div id="yearModal" class="modal">
+    <div class="modal-content" style="max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+        <span class="close-modal" onclick="closeModal('yearModal')">&times;</span>
+        <h3 style="color:var(--primary)">📅 Yearly Plan / جدول السنة</h3>
+        <div style="font-size:0.8em; color:#aaa; margin-bottom:10px;">Upcoming Rotation Cycles (Next 12 Months)</div>
+        <div id="yearScheduleList"></div>
+        <button class="btn" onclick="closeModal('yearModal')" style="margin-top:10px;">Close / إغلاق</button>
+    </div>
+</div>
+
+<div id="customAlertModal" class="modal" style="z-index: 3100;">
+    <div class="modal-content alert-content">
+        <div style="font-size: 3em; margin-bottom: 10px; text-align: center;">🔮</div>
+        <h3 class="alert-title">Hold On!</h3>
+        <p id="customAlertText"></p>
+        <button class="btn" onclick="closeModal('customAlertModal')" style="background: var(--warning); color: #000; width: 100%; margin-top: 15px;">Got it!</button>
+    </div>
+</div>
+
+<script>
+    let timerInterval;
+    let isPrivacyOn = false;
+    let userNotesList = [];
+    let currentShareText = "";
+    let currentCurrency = 'USD';
+    let userExchangeRate = 1;
+    let salaryData = {};
+
+    const themes = [ "url('CSU TEAM.jpg')", "linear-gradient(to right, #2c5364, #203a43, #0f2027)", "url('CPF.jpg')" ];
+    let currentTheme = 0;
+
+    window.onload = function() {
+        const savedTheme = localStorage.getItem('kbr_themeIndex');
+        if(savedTheme) toggleTheme(parseInt(savedTheme)); else toggleTheme(0);
+
+        if(localStorage.getItem('kbr_notes_array')) {
+            try { userNotesList = JSON.parse(localStorage.getItem('kbr_notes_array')); renderNotes(); } catch(e) { userNotesList = []; }
+        }
+
+        if(localStorage.getItem('kbr_username')) {
+            document.getElementById('username').value = localStorage.getItem('kbr_username');
+            document.getElementById('workDays').value = localStorage.getItem('kbr_workDays');
+            document.getElementById('restDays').value = localStorage.getItem('kbr_restDays');
+            document.getElementById('startDate').value = localStorage.getItem('kbr_startDate');
+            document.getElementById('startType').value = localStorage.getItem('kbr_startType') || 'work';
+            document.getElementById('annualSalary').value = localStorage.getItem('kbr_annualSalary');
+            document.getElementById('exchangeRate').value = localStorage.getItem('kbr_exchangeRate');
+            document.getElementById('taxRate').value = localStorage.getItem('kbr_taxRate');
+            document.getElementById('socialRate').value = localStorage.getItem('kbr_socialRate');
+            document.getElementById('monthsWorked').value = localStorage.getItem('kbr_monthsWorked');
+
+            const savedRates = JSON.parse(localStorage.getItem('kbr_savedRates') || '{}');
+            window.savedRates = savedRates;
+
+            if(document.getElementById('startDate').value) {
+                calculateAll(true);
+            }
+        } else {
+            window.savedRates = {};
+        }
+
+        const hour = new Date().getHours();
+        let greeting = "Welcome";
+        if(hour < 12) greeting = "Good Morning"; else if(hour < 18) greeting = "Good Afternoon"; else greeting = "Good Evening";
+        window.baseGreeting = greeting;
+    };
+
+    // --- Currency Converter Logic (Updated) ---
+    let isUsdToLocal = true;
+
+    function toggleDirection() {
+        isUsdToLocal = !isUsdToLocal;
+        const icon = document.getElementById('directionIcon');
+        const text = document.getElementById('directionText');
+        const label = document.getElementById('amountLabel');
+        const country = document.getElementById('convCountry').value;
+
+        if (isUsdToLocal) {
+            icon.innerText = "⬇️";
+            text.innerText = "USD to Local";
+            label.innerText = "Amount (USD) / المبلغ بالدولار";
+        } else {
+            icon.innerText = "⬆️";
+            text.innerText = "Local to USD";
+            label.innerText = `Amount (${country}) / المبلغ بالعملة المحلية`;
+        }
+        convertCurrency();
+    }
+
+    function updateRatePlaceholder() {
+        const country = document.getElementById('convCountry').value;
+        const rateInput = document.getElementById('convRate');
+
+        if (!isUsdToLocal) {
+             document.getElementById('amountLabel').innerText = `Amount (${country}) / المبلغ بالعملة المحلية`;
+        }
+
+        if(window.savedRates && window.savedRates[country]) {
+            rateInput.value = window.savedRates[country];
+        } else {
+            rateInput.value = "";
+            let hint = "1500";
+            if(country === 'TRY') hint = "35";
+            if(country === 'INR') hint = "83";
+            if(country === 'CNY') hint = "7.2";
+            if(country === 'AED') hint = "3.67";
+            rateInput.placeholder = "e.g. " + hint;
+        }
+        convertCurrency();
+    }
+
+    function convertCurrency() {
+        const amount = parseFloat(document.getElementById('convAmount').value);
+        const rate = parseFloat(document.getElementById('convRate').value);
+        const country = document.getElementById('convCountry').value;
+        const resDiv = document.getElementById('convResult');
+
+        if (!amount || !rate) {
+            resDiv.innerText = "0";
+            return;
+        }
+
+        window.savedRates[country] = rate;
+        localStorage.setItem('kbr_savedRates', JSON.stringify(window.savedRates));
+
+        let result = 0;
+        let symbol = "";
+
+        if (isUsdToLocal) {
+            result = amount * rate;
+            if(country === 'IQD') symbol = "د.ع";
+            else if(country === 'TRY') symbol = "₺";
+            else if(country === 'INR') symbol = "₹";
+            else symbol = country;
+        } else {
+            result = amount / rate;
+            symbol = "$";
+        }
+
+        const digits = (symbol === "$") ? 2 : 0;
+        resDiv.innerText = result.toLocaleString(undefined, {maximumFractionDigits: digits}) + " " + symbol;
+    }
+
+    // --- Salary Only Logic ---
+    function calculateSalaryOnly() {
+        const annualGross = parseFloat(document.getElementById('annualSalary').value);
+        if (isNaN(annualGross) || annualGross <= 0) {
+            showCustomAlert("Please enter Annual Salary first.\nيرجى إدخال الراتب السنوي أولاً.");
+            return;
+        }
+        calculateAll(true, true);
+    }
+
+    function createDate(dateString) {
+        if (!dateString) return new Date();
+        const parts = dateString.split('-');
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function toggleSalaryInputs() {
+        const block = document.getElementById('salaryInputsBlock');
+        block.style.display = (block.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function togglePrivacy() {
+        isPrivacyOn = !isPrivacyOn;
+        const elements = document.querySelectorAll('.privacy-sensitive');
+        const btn = document.querySelector('.privacy-toggle');
+        elements.forEach(el => {
+            if(isPrivacyOn) el.classList.add('blur-text'); else el.classList.remove('blur-text');
+        });
+        btn.innerText = isPrivacyOn ? "🔒" : "👁️";
+    }
+
+    function toggleCurrency() {
+        if (!salaryData.monthlyNet) return;
+
+        const rate = parseFloat(document.getElementById('exchangeRate').value);
+        if (!rate || rate <= 1) {
+            showCustomAlert("Please enter a valid Exchange Rate in the settings first.\nيرجى إدخال سعر صرف صحيح في الإعدادات أولاً.");
+            return;
+        }
+        currentCurrency = (currentCurrency === 'USD') ? 'IQD' : 'USD';
+        userExchangeRate = rate;
+        renderSalary();
+    }
+
+    function renderSalary() {
+        const symbol = (currentCurrency === 'USD') ? '$' : 'د.ع';
+        const multiplier = (currentCurrency === 'USD') ? 1 : userExchangeRate;
+        const digits = (currentCurrency === 'USD') ? 0 : 0;
+
+        const dispRemaining = (salaryData.remaining * multiplier).toLocaleString(undefined, {maximumFractionDigits: digits});
+        const dispReceived = (salaryData.received * multiplier).toLocaleString(undefined, {maximumFractionDigits: digits});
+        const dispMonthly = (salaryData.monthlyNet * multiplier).toLocaleString(undefined, {maximumFractionDigits: digits});
+        const dispDeducted = (salaryData.deducted * multiplier).toLocaleString(undefined, {maximumFractionDigits: digits});
+
+        document.getElementById('resRemaining').innerText = symbol + ' ' + dispRemaining;
+        document.getElementById('resReceived').innerText = symbol + ' ' + dispReceived;
+        document.getElementById('resNetMonthly').innerText = symbol + ' ' + dispMonthly;
+        document.getElementById('resDeducted').innerText = symbol + ' ' + dispDeducted;
+    }
+
+    function confirmLogout() {
+        showCustomAlert("Are you sure you want to Logout & Clear Data? \nهل أنت متأكد من الخروج ومسح البيانات؟", function() {
+            localStorage.clear(); location.reload();
+        });
+    }
+
+    function addNote() {
+        const input = document.getElementById('newNoteInput');
+        const text = input.value.trim();
+        if(!text) return;
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-GB') + ' - ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const noteObj = { id: Date.now(), text: text, date: dateStr };
+        userNotesList.unshift(noteObj);
+        localStorage.setItem('kbr_notes_array', JSON.stringify(userNotesList));
+        input.value = "";
+        renderNotes();
+    }
+
+    function deleteNote(id) {
+        userNotesList = userNotesList.filter(n => n.id !== id);
+        localStorage.setItem('kbr_notes_array', JSON.stringify(userNotesList));
+        renderNotes();
+    }
+
+    function renderNotes() {
+        const listContainer = document.getElementById('notesList');
+        listContainer.innerHTML = "";
+        if(userNotesList.length === 0) { listContainer.innerHTML = '<p style="color:#666; text-align:center; margin-top:20px;">No notes yet / لا توجد ملاحظات</p>'; return; }
+        userNotesList.forEach(note => {
+            const div = document.createElement('div');
+            div.className = 'note-item';
+            div.innerHTML = `<div style="flex:1;"><div class="note-text">${note.text}</div><span class="note-date">${note.date}</span></div><span class="delete-note" onclick="deleteNote(${note.id})">&times;</span>`;
+            listContainer.appendChild(div);
+        });
+    }
+
+    function showCustomAlert(msg, confirmCallback = null) {
+        document.getElementById('customAlertText').innerText = msg;
+        const modal = document.getElementById('customAlertModal');
+        const btn = modal.querySelector('.btn');
+        if(confirmCallback) {
+            btn.innerText = "Yes, Proceed / نعم, استمر";
+            btn.onclick = function() { confirmCallback(); closeModal('customAlertModal'); };
+        } else {
+            btn.innerText = "Got it!";
+            btn.onclick = function() { closeModal('customAlertModal'); };
+        }
+        openModal('customAlertModal');
+    }
+
+    function shareStatus() {
+        if (!currentShareText) return;
+        navigator.clipboard.writeText(currentShareText).then(() => {
+            showCustomAlert("Status copied to clipboard! 📋\nReady to paste in WhatsApp.\n\nتم نسخ الحالة! جاهزة للصق في واتساب.");
+        }).catch(err => {
+            showCustomAlert("Failed to copy status.");
+        });
+    }
+
+    function calculateAll(isAuto = false, isSalaryOnly = false) {
+        const name = document.getElementById('username').value;
+        const workDays = parseInt(document.getElementById('workDays').value);
+        const restDays = parseInt(document.getElementById('restDays').value);
+        const startDateStr = document.getElementById('startDate').value;
+        const startType = document.getElementById('startType').value;
+
+        const annualGross = parseFloat(document.getElementById('annualSalary').value) || 0;
+        const exchangeRate = parseFloat(document.getElementById('exchangeRate').value);
+        const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+        const socialRate = parseFloat(document.getElementById('socialRate').value) || 0;
+        const monthsWorked = parseFloat(document.getElementById('monthsWorked').value) || 0;
+
+        if (!isAuto && !isSalaryOnly) {
+            let missing = [];
+            if (isNaN(workDays) || isNaN(restDays)) missing.push("• Work & Rest Days");
+            if (!startDateStr) missing.push("• Start Date");
+
+            if (missing.length > 0) {
+                showCustomAlert("Attention ⚠️\n\nPlease fill in the missing information:\n\n" + missing.join("\n"));
+                return;
+            }
+        }
+
+        localStorage.setItem('kbr_username', name);
+        if(!isSalaryOnly) {
+            localStorage.setItem('kbr_workDays', workDays);
+            localStorage.setItem('kbr_restDays', restDays);
+            localStorage.setItem('kbr_startDate', startDateStr);
+            localStorage.setItem('kbr_startType', startType);
+        }
+        localStorage.setItem('kbr_annualSalary', annualGross);
+        localStorage.setItem('kbr_exchangeRate', exchangeRate);
+        localStorage.setItem('kbr_taxRate', taxRate);
+        localStorage.setItem('kbr_socialRate', socialRate);
+        localStorage.setItem('kbr_monthsWorked', monthsWorked);
+
+        document.getElementById('inputSection').style.display = 'none';
+        document.getElementById('resultSection').style.display = 'block';
+        const greetingText = window.baseGreeting || "Welcome";
+        document.getElementById('displayHeader').innerText = name ? `${greetingText}, ${name}` : greetingText;
+        document.getElementById('bottomNav').style.display = 'flex';
+
+        if(isSalaryOnly) {
+            switchTab('salary');
+        } else if (!isAuto) {
+            switchTab('rotation');
+        }
+
+        const totalDeductionPercent = taxRate + socialRate;
+        const annualNet = annualGross * (1 - (totalDeductionPercent / 100));
+        const totalDeductionAmount = annualGross - annualNet;
+        const monthlyNet = annualNet / 12;
+        const receivedSoFar = monthlyNet * monthsWorked;
+        const remainingBalance = annualNet - receivedSoFar;
+
+        salaryData = {
+            remaining: Math.max(0, remainingBalance),
+            received: receivedSoFar,
+            monthlyNet: monthlyNet,
+            deducted: totalDeductionAmount
+        };
+        userExchangeRate = exchangeRate || 1;
+
+        document.getElementById('monthsWorkedText').innerText = `for ${monthsWorked} months`;
+        document.getElementById('deductionDetails').innerText = `Tax: ${taxRate}% | SS: ${socialRate}%`;
+
+        renderSalary();
+
+        if (startDateStr && !isNaN(workDays)) {
+            startTimer(startDateStr, workDays, restDays, startType);
+            generateCalendar(startDateStr, workDays, restDays, startType);
+        } else {
+            if(timerInterval) clearInterval(timerInterval);
+            document.getElementById('rotationView').classList.remove('active');
+        }
+    }
+
+    function switchTab(tab) {
+        const items = document.querySelectorAll('.nav-item');
+        items.forEach(item => item.classList.remove('active'));
+        document.getElementById('rotationView').classList.remove('active');
+        document.getElementById('salaryView').classList.remove('active');
+        if(tab === 'rotation') {
+            items[0].classList.add('active');
+            document.getElementById('rotationView').classList.add('active');
+        } else {
+            items[1].classList.add('active');
+            document.getElementById('salaryView').classList.add('active');
+        }
+    }
+
+    function startTimer(startStr, workDays, restDays, startType) {
+        if (timerInterval) clearInterval(timerInterval);
+        let startDate = createDate(startStr);
+        if (startType === 'rest') startDate.setDate(startDate.getDate() - workDays);
+        const cycleLength = workDays + restDays;
+
+        timerInterval = setInterval(() => {
+            const now = new Date();
+            const diffTime = now - startDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            let dayInCycle = diffDays % cycleLength;
+            if (dayInCycle < 0) dayInCycle += cycleLength;
+            let isWorking = dayInCycle < workDays;
+
+            let daysPassedInPhase = 0;
+            let totalPhaseDays = isWorking ? workDays : restDays;
+            const currentCycleStartDays = Math.floor(diffDays / cycleLength) * cycleLength;
+            let phaseStartDate = new Date(startDate);
+            phaseStartDate.setDate(startDate.getDate() + currentCycleStartDays + (isWorking ? 0 : workDays));
+            const diffPhase = now - phaseStartDate;
+            daysPassedInPhase = Math.floor(diffPhase / (1000 * 60 * 60 * 24));
+            if(daysPassedInPhase > totalPhaseDays) daysPassedInPhase = totalPhaseDays;
+
+            let percentage = (daysPassedInPhase / totalPhaseDays) * 100;
+            if(percentage > 100) percentage = 100; if(percentage < 0) percentage = 0;
+
+            document.getElementById('progressBar').style.width = percentage + "%";
+            document.getElementById('progressText').innerText = `${Math.floor(percentage)}% Completed`;
+
+            let nextChangeDate = new Date(startDate);
+            let followingChangeDate = new Date(startDate);
+
+            let statusText = "";
+            let nextDateLabel = "";
+            let nextDateVal = "";
+
+            if (isWorking) {
+                nextChangeDate.setDate(startDate.getDate() + currentCycleStartDays + workDays);
+                followingChangeDate = new Date(nextChangeDate);
+                followingChangeDate.setDate(nextChangeDate.getDate() + restDays);
+                updateUI("On Duty (في الدوام)", "status-work", "Next Rest", nextChangeDate, "Back to Work", followingChangeDate);
+                statusText = "On Duty 🛑 (في الدوام)";
+                nextDateLabel = "Rest Starts:";
+                nextDateVal = nextChangeDate.toLocaleDateString('en-GB');
+            } else {
+                nextChangeDate.setDate(startDate.getDate() + currentCycleStartDays + cycleLength);
+                followingChangeDate = new Date(nextChangeDate);
+                followingChangeDate.setDate(nextChangeDate.getDate() + workDays);
+                updateUI("Off Duty (في الاستراحة)", "status-off", "Back to Work", nextChangeDate, "Next Rest", followingChangeDate);
+                statusText = "Off Duty 🏠 (استراحة)";
+                nextDateLabel = "Back to Work:";
+                nextDateVal = nextChangeDate.toLocaleDateString('en-GB');
+            }
+
+            const timeLeft = nextChangeDate - now;
+            if (timeLeft > 0) {
+                const d = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const h = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                document.getElementById('timer').innerText = `${d}d ${h}:${m}:${s}`;
+                currentShareText = `👋 My Rotation Status:\n\n${statusText}\n⏳ Remaining: ${d} Days\n📅 ${nextDateLabel} ${nextDateVal}\n\nGenerated by KBR Tracker`;
+            }
+        }, 1000);
+    }
+
+    function updateUI(status, styleClass, label1, date1, label2, date2) {
+        const badge = document.getElementById('statusBadge');
+        badge.innerText = status;
+        badge.className = `status-badge ${styleClass}`;
+
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        document.getElementById('nextEventLabel').innerText = label1;
+        document.getElementById('nextEventDate').innerHTML = `
+            ${date1.toLocaleDateString('en-GB')}
+            <span class="day-small">${dayNames[date1.getDay()]}</span>
+        `;
+
+        document.getElementById('followingEventLabel').innerText = label2;
+        document.getElementById('followingEventDate').innerHTML = `
+            ${date2.toLocaleDateString('en-GB')}
+            <span class="day-small">${dayNames[date2.getDay()]}</span>
+        `;
+    }
+
+    function generateYearSchedule() {
+        const workDays = parseInt(document.getElementById('workDays').value);
+        const restDays = parseInt(document.getElementById('restDays').value);
+        const startStr = document.getElementById('startDate').value;
+        const startType = document.getElementById('startType').value;
+        const listContainer = document.getElementById('yearScheduleList');
+
+        if(isNaN(workDays) || isNaN(restDays) || !startStr) return;
+
+        listContainer.innerHTML = "";
+
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        let currentDate = createDate(startStr);
+        if (startType === 'rest') currentDate.setDate(currentDate.getDate() - workDays);
+
+        const cycleLength = workDays + restDays;
+        const oneYearFromNow = new Date();
+        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
+        let tempDate = new Date(currentDate);
+        const today = new Date();
+        const daysDiff = Math.floor((today - tempDate) / (1000 * 60 * 60 * 24));
+        if(daysDiff > 0) {
+            const cyclesPassed = Math.floor(daysDiff / cycleLength);
+            tempDate.setDate(tempDate.getDate() + (cyclesPassed * cycleLength));
+        }
+
+        for(let i=0; i<15; i++) {
+            let workStart = new Date(tempDate);
+            let restStart = new Date(tempDate);
+            restStart.setDate(workStart.getDate() + workDays);
+            let nextCycle = new Date(restStart);
+            nextCycle.setDate(restStart.getDate() + restDays);
+
+            const workDayName = dayNames[workStart.getDay()];
+            const restDayName = dayNames[restStart.getDay()];
+
+            const workItem = document.createElement('div');
+            workItem.className = 'year-item work';
+            workItem.innerHTML = `
+                <div>
+                    <div class="y-date">${workStart.toLocaleDateString('en-GB')} <span class="y-dayname">${workDayName}</span></div>
+                    <div class="y-label">Start Work / التحاق</div>
+                </div>
+                <div style="font-size:1.5em">🛑</div>
+            `;
+            listContainer.appendChild(workItem);
+
+            const restItem = document.createElement('div');
+            restItem.className = 'year-item rest';
+            restItem.innerHTML = `
+                <div>
+                    <div class="y-date">${restStart.toLocaleDateString('en-GB')} <span class="y-dayname">${restDayName}</span></div>
+                    <div class="y-label">Start Rest / نزول</div>
+                </div>
+                <div style="font-size:1.5em">🏠</div>
+            `;
+            listContainer.appendChild(restItem);
+
+            tempDate = nextCycle;
+            if(tempDate > oneYearFromNow) break;
+        }
+        openModal('yearModal');
+    }
+
+    function generateCalendar(startStr, workDays, restDays, startType) {
+        const grid = document.getElementById('calendarGrid');
+        grid.innerHTML = "";
+        let startDate = createDate(startStr);
+        if (startType === 'rest') startDate.setDate(startDate.getDate() - workDays);
+        const cycleLength = workDays + restDays;
+        const today = new Date();
+        for(let i=0; i<21; i++) {
+            let currentDay = new Date();
+            currentDay.setDate(today.getDate() + i);
+            const diffTime = currentDay - startDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            let dayInCycle = diffDays % cycleLength;
+            if (dayInCycle < 0) dayInCycle += cycleLength;
+            let isWorking = dayInCycle < workDays;
+            const cell = document.createElement('div');
+            cell.className = `cal-day ${isWorking ? 'cal-work' : 'cal-rest'}`;
+            if(i === 0) cell.classList.add('cal-today');
+            cell.innerText = `${currentDay.getDate()}/${currentDay.getMonth()+1}`;
+            grid.appendChild(cell);
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('inputSection').style.display = 'block';
+        document.getElementById('resultSection').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+        if (timerInterval) clearInterval(timerInterval);
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = "block"; }
+    function closeModal(id) { document.getElementById(id).style.display = "none"; }
+    window.onclick = function(e) { if(e.target.classList.contains('modal')) e.target.style.display="none";}
+
+    function toggleTheme(idx) {
+        currentTheme = (typeof idx === 'number') ? idx : (currentTheme + 1) % themes.length;
+        document.documentElement.style.setProperty('--bg-image', themes[currentTheme]);
+        localStorage.setItem('kbr_themeIndex', currentTheme);
+    }
+</script>
+
+</body>
+</html>
