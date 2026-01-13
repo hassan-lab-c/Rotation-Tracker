@@ -323,6 +323,23 @@
                 <label>Annual Gross Salary (الراتب السنوي الكلي)</label>
                 <input type="number" id="annualSalary" placeholder="Example: 120000">
             </div>
+
+            <div class="input-group">
+                <label>Target Currency (العملة المحلية المطلوبة)</label>
+                <select id="targetCurrency" onchange="updateCurrencyLabel()">
+                    <option value="IQD">🇮🇶 Iraq (IQD - د.ع)</option>
+                    <option value="INR">🇮🇳 India (INR - ₹)</option>
+                    <option value="TRY">🇹🇷 Turkey (TRY - ₺)</option>
+                    <option value="EGP">🇪🇬 Egypt (EGP - ج.م)</option>
+                    <option value="SAR">🇸🇦 KSA (SAR - ﷼)</option>
+                    <option value="AED">🇦🇪 UAE (AED - د.إ)</option>
+                    <option value="CNY">🇨🇳 China (CNY - ¥)</option>
+                    <option value="EUR">🇪🇺 Euro (EUR - €)</option>
+                    <option value="GBP">🇬🇧 UK (GBP - £)</option>
+                    <option value="PHP">🇵🇭 Philippines (PHP - ₱)</option>
+                </select>
+            </div>
+
             <div class="input-group">
                 <label>Exchange Rate / سعر الصرف (1$ = ?)</label>
                 <input type="number" id="exchangeRate" placeholder="e.g. 1500 (For results page)">
@@ -532,7 +549,7 @@
                 <li><b>🔒 خصوصية تامة:</b> يعمل بدون إنترنت، وبياناتك محفوظة بجهازك فقط.</li>
             </ul>
         </div>
-        <div style="text-align: center; margin-top: 15px; font-size: 0.8em; color: var(--primary);">Version 1.7 (Zoom Added)</div>
+        <div style="text-align: center; margin-top: 15px; font-size: 0.8em; color: var(--primary);">Version 1.8 (Global Currency)</div>
     </div>
 </div>
 
@@ -580,6 +597,14 @@
 </div>
 
 <script>
+    // --- متغيرات العملة الجديدة ---
+    const currencySymbols = {
+        'IQD': 'د.ع', 'INR': '₹', 'TRY': '₺', 'EGP': 'ج.م',
+        'SAR': '﷼', 'AED': 'د.إ', 'CNY': '¥', 'EUR': '€',
+        'GBP': '£', 'PHP': '₱', 'USD': '$'
+    };
+    let selectedLocalCurrency = 'IQD';
+
     let timerInterval;
     let isPrivacyOn = false;
     let userNotesList = [];
@@ -610,6 +635,12 @@
             document.getElementById('taxRate').value = localStorage.getItem('kbr_taxRate');
             document.getElementById('socialRate').value = localStorage.getItem('kbr_socialRate');
             document.getElementById('monthsWorked').value = localStorage.getItem('kbr_monthsWorked');
+
+            // --- استرجاع العملة المفضلة للمستخدم ---
+            if(localStorage.getItem('kbr_targetCurrency')) {
+                document.getElementById('targetCurrency').value = localStorage.getItem('kbr_targetCurrency');
+                updateCurrencyLabel(); // لتحديث الزر فوراً
+            }
 
             const savedRates = JSON.parse(localStorage.getItem('kbr_savedRates') || '{}');
             window.savedRates = savedRates;
@@ -781,23 +812,49 @@
         btn.innerText = isPrivacyOn ? "🔒" : "👁️";
     }
 
+    // --- New Currency Functions ---
+
+    function updateCurrencyLabel() {
+        selectedLocalCurrency = document.getElementById('targetCurrency').value;
+        const symbol = currencySymbols[selectedLocalCurrency];
+
+        // تحديث نص الزر في الأعلى
+        document.querySelector('.currency-toggle-btn').innerText = `💲/ ${symbol}`;
+
+        // حفظ الاختيار
+        localStorage.setItem('kbr_targetCurrency', selectedLocalCurrency);
+
+        // إذا كان المستخدم حالياً يعرض العملة المحلية، نحدث الأرقام فوراً
+        if (currentCurrency !== 'USD') {
+            currentCurrency = selectedLocalCurrency;
+            renderSalary();
+        }
+    }
+
     function toggleCurrency() {
         if (!salaryData.monthlyNet) return;
 
         const rate = parseFloat(document.getElementById('exchangeRate').value);
         if (!rate || rate <= 1) {
-            showCustomAlert("Please enter a valid Exchange Rate in the settings first.\nيرجى إدخال سعر صرف صحيح في الإعدادات أولاً.");
+            showCustomAlert("Please enter a valid Exchange Rate first.\nيرجى إدخال سعر صرف صحيح أولاً.");
             return;
         }
-        currentCurrency = (currentCurrency === 'USD') ? 'IQD' : 'USD';
+
+        // التبديل بين الدولار والعملة المختارة
+        currentCurrency = (currentCurrency === 'USD') ? selectedLocalCurrency : 'USD';
         userExchangeRate = rate;
         renderSalary();
     }
 
     function renderSalary() {
-        const symbol = (currentCurrency === 'USD') ? '$' : 'د.ع';
+        // تحديد الرمز بناءً على العملة الحالية
+        let symbol = currencySymbols[currentCurrency] || currentCurrency;
+
         const multiplier = (currentCurrency === 'USD') ? 1 : userExchangeRate;
-        const digits = (currentCurrency === 'USD') ? 0 : 0;
+
+        // إزالة الفواصل العشرية للعملات الكبيرة مثل الدينار العراقي، وإبقائها للعملات الصغيرة
+        const isLargeCurrency = ['IQD', 'IDR', 'VND'].includes(currentCurrency);
+        const digits = (currentCurrency === 'USD' || !isLargeCurrency) ? 2 : 0;
 
         const dispRemaining = (salaryData.remaining * multiplier).toLocaleString(undefined, {maximumFractionDigits: digits});
         const dispReceived = (salaryData.received * multiplier).toLocaleString(undefined, {maximumFractionDigits: digits});
@@ -808,6 +865,16 @@
         document.getElementById('resReceived').innerText = symbol + ' ' + dispReceived;
         document.getElementById('resNetMonthly').innerText = symbol + ' ' + dispMonthly;
         document.getElementById('resDeducted').innerText = symbol + ' ' + dispDeducted;
+
+        // تحديث زر التبديل ليبقى مظللاً عند تفعيله
+        const btn = document.querySelector('.currency-toggle-btn');
+        if(currentCurrency !== 'USD') {
+            btn.style.background = "var(--warning)";
+            btn.style.color = "#000";
+        } else {
+            btn.style.background = "rgba(255,255,255,0.1)";
+            btn.style.color = "var(--warning)";
+        }
     }
 
     function confirmLogout() {
@@ -937,7 +1004,12 @@
         document.getElementById('monthsWorkedText').innerText = `for ${monthsWorked} months`;
         document.getElementById('deductionDetails').innerText = `Tax: ${taxRate}% | SS: ${socialRate}%`;
 
-        renderSalary();
+        // استدعاء دالة العرض المحدثة
+        if (typeof updateCurrencyLabel === "function") {
+            updateCurrencyLabel();
+        } else {
+            renderSalary();
+        }
 
         if (startDateStr && !isNaN(workDays)) {
             startTimer(startDateStr, workDays, restDays, startType);
